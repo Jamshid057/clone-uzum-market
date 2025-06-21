@@ -1,79 +1,19 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="uz">
 <head>
   <meta charset="UTF-8">
   <title>JAMSHOP</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body
-    {
-        background-color: rgb(255,243,204);
+    body {
+      background-color: rgb(255,243,204);
     }
-    .carousel {
-      position: relative;
-      width: 100%;
-      height: 250px;
-      overflow: hidden;
-      margin-bottom: 30px;
-    }
-
-    .slides {
-      display: flex;
-      transition: transform 1s ease-in-out;
-      width: 100%; 
-    }
-
-    .slide {
-      min-width: 100%;
-      height: 250px;
-    }
-
-    .slide img {
-      width: 100%;
-      height: 100%;
+    .carousel-item img {
+      height: 300px;
       object-fit: cover;
     }
-
-    .controls {
-      position: absolute;
-      top: 50%;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      transform: translateY(-50%);
-    }
-
-    .controls button {
-      background-color: rgba(0,0,0,0.5);
-      color: white;
-      border: none;
-      font-size: 20px;
-      padding: 10px 15px;
-      cursor: pointer;
-    }
-
-    .controls button:hover {
-      background-color: rgba(0,0,0,0.8);
-    }
-
-    /* Mahsulotlar kartalari */
-    .products {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .product-card {
-      border: 1px solid #ccc;
-      padding: 10px;
-      width: 200px;
-      text-align: center;
-    }
-
     .product-card img {
-      width: 100%;
       height: 150px;
       object-fit: contain;
     }
@@ -81,85 +21,78 @@
 </head>
 <body>
 
-    <!-- 🔐 Foydalanuvchi menyusi -->
-    <div style="text-align: right; padding: 10px;">
+  <!-- 🔐 User auth panel -->
+  <div class="container mt-3 text-end">
     {% if user.is_authenticated %}
-      Salom, {{ user.username }} |
-      <a href="{% url 'logout' %}">Chiqish</a>
+      Salom, <strong>{{ user.username }}</strong> |
+      <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger">Chiqish</a>
     {% else %}
-      <a href="{% url 'login' %}">Kirish</a> |
-      <a href="{% url 'signup' %}">Ro‘yxatdan o‘tish</a>
+      <a href="{% url 'login' %}" class="btn btn-sm btn-outline-primary">Kirish</a>
+      <a href="{% url 'signup' %}" class="btn btn-sm btn-outline-success">Ro‘yxatdan o‘tish</a>
     {% endif %}
   </div>
 
-  <!-- 🎞 Carousel (auto + controls) -->
-  <div class="carousel">
-    <div class="slides" id="slides">
-      <div class="slide"><img src="{% static 'img/1.jpg' %}" alt="1"></div>
-      <div class="slide"><img src="{% static 'img/2.jpg' %}" alt="2"></div>
-      <div class="slide"><img src="{% static 'img/3.jpg' %}" alt="3"></div>
+  <!-- 🎞 Bootstrap carousel -->
+  <div id="carouselExample" class="carousel slide mb-4" data-bs-ride="carousel">
+    <div class="carousel-inner">
+      <div class="carousel-item active">
+        <img src="{% static 'img/1.jpg' %}" class="d-block w-100" alt="1">
+      </div>
+      <div class="carousel-item">
+        <img src="{% static 'img/2.jpg' %}" class="d-block w-100" alt="2">
+      </div>
+      <div class="carousel-item">
+        <img src="{% static 'img/3.jpg' %}" class="d-block w-100" alt="3">
+      </div>
     </div>
-    <div class="controls">
-      <button onclick="prevSlide()">‹</button>
-      <button onclick="nextSlide()">›</button>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+      <span class="carousel-control-next-icon"></span>
+    </button>
+  </div>
+
+  <!-- 🗂 Kategoriyalar -->
+  <div class="container text-center mb-4">
+    <h4>Kategoriyalar</h4>
+    {% for cat in categories %}
+      <a href="{% url 'products_by_category' cat.id %}" class="btn btn-sm btn-outline-dark m-1 {% if selected_category == cat.name %}active{% endif %}">
+        {{ cat.name }}
+      </a>
+    {% endfor %}
+    <br>
+    <a href="{% url 'home' %}" class="btn btn-link mt-2">Hammasini ko‘rish</a>
+  </div>
+
+  <!-- 🛍 Mahsulotlar -->
+  <div class="container">
+    <h3 class="text-center mb-3">Mahsulotlar</h3>
+    <div class="row justify-content-center">
+      {% for product in products %}
+        <div class="col-md-3 mb-4">
+          <div class="card product-card">
+            <a href="{% url 'product_detail' product.id %}">
+              <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.title }}">
+            </a>
+            <div class="card-body text-center">
+              <h6 class="card-title">
+                <a href="{% url 'product_detail' product.id %}" class="text-decoration-none">{{ product.title }}</a>
+              </h6>
+              <p><strong>{{ product.price|floatformat:0 }} so'm</strong></p>
+              <form method="post" action="{% url 'add_to_cart' product.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-warning">🛒 Savatga qo‘shish</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
     </div>
   </div>
-<!-- 🗂 Kategoriyalar menyusi -->
-    <div style="text-align: center; margin: 20px;">
-        <h3>Kategoriyalar:</h3>
-        {% for cat in categories %}
-        <a href="{% url 'products_by_category' cat.id %}" style="margin: 0 10px; font-weight: {% if selected_category == cat.name %}bold{% endif %};">
-        {{ cat.name }}
-        </a>
-        {% endfor %}
-        <br><br>
-        <a href="{% url 'home' %}">Hammasini ko‘rish</a>
-    </div>
-  <!-- 🛍 Mahsulotlar -->
-  <h2 style="text-align: center;">Products</h2>
-   <div class="products">
-  {% for product in products %}
-    <div class="product-card">
-      <a href="{% url 'product_detail' product.id %}">
-        <img src="{{ product.image_url }}" alt="{{ product.title }}">
-      </a>
-      <p>
-        <a href="{% url 'product_detail' product.id %}">{{ product.title }}</a>
-      </p>
-      <p><strong>{{ product.price|floatformat:0 }} so'm</strong></p>
 
-      <!-- 🛒 Savatga qo‘shish form -->
-      <form method="post" action="{% url 'add_to_cart' product.id %}">
-        {% csrf_token %}
-        <button type="submit">🛒 Savatga qo‘shish</button>
-      </form>
-
-    </div>
-  {% endfor %}
-</div>
-
-        <!-- 🧠 JavaScript -->
-  <script>
-    const slides = document.getElementById('slides');
-    const totalSlides = slides.children.length;
-    let index = 0;
-
-    function updateSlide() {
-      slides.style.transform = `translateX(-${index * 100}%)`;
-    }
-
-    function nextSlide() {
-      index = (index + 1) % totalSlides;
-      updateSlide();
-    }
-
-    function prevSlide() {
-      index = (index - 1 + totalSlides) % totalSlides;
-      updateSlide();
-    }
-
-    setInterval(nextSlide, 3000);
-  </script>  
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 

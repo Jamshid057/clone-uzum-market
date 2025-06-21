@@ -1,24 +1,42 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="uz">
 <head>
   <meta charset="UTF-8">
-  <title>{{ product.title }}</title>
+  <title>{{ product.title }} - JAMSHOP</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body style="font-family: sans-serif; background-color: #fefefe; padding: 20px;">
-  <h1>{{ product.title }}</h1>
-  <img src="{{ product.image_url }}" alt="{{ product.title }}" width="300">
-  <h3>Narxi: {{ product.price|floatformat:0 }} so'm</h3>
-  <p>Kategoriya: {{ product.category.name }}</p>
+<body style="background-color: rgb(255,243,204);">
 
-  <form method="post" action="{% url 'add_to_cart' product.id %}">
-    {% csrf_token %}
-    <button type="submit">🛒 Savatga qo‘shish</button>
-  </form>
+  <div class="container mt-4">
+    <a href="{% url 'home' %}" class="btn btn-outline-secondary mb-3">⬅ Orqaga</a>
 
-  <br>
-  <a href="{% url 'home' %}">⬅️ Orqaga</a> |
-  <a href="{% url 'view_cart' %}">🛒 Savat</a>
+    <div class="row">
+      <!-- 🖼 Mahsulot rasmi -->
+      <div class="col-md-6">
+        <img src="{{ product.image_url }}" class="img-fluid border" alt="{{ product.title }}">
+      </div>
+
+      <!-- 📄 Mahsulot ma’lumotlari -->
+      <div class="col-md-6">
+        <h2>{{ product.title }}</h2>
+        <h4 class="text-success">{{ product.price|floatformat:0 }} so'm</h4>
+        <p><strong>Kategoriya:</strong> {{ product.category.name }}</p>
+        <p>{{ product.description }}</p>
+
+        <!-- 🛒 Savatga qo‘shish formasi -->
+        <form method="post" action="{% url 'add_to_cart' product.id %}">
+          {% csrf_token %}
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-warning btn-lg">🛒 Savatga qo‘shish</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 

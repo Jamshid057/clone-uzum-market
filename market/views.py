@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Product, Category, Order, OrderItem
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 def home(request):
     products = Product.objects.all()
@@ -27,13 +29,38 @@ def product_detail(request, product_id):
         'product': product
     })
 
+@login_required
 def add_to_cart(request, product_id):
-    cart = request.session.get('cart', [])
-    if product_id not in cart:
-        cart.append(product_id)
-    request.session['cart'] = cart
-    return redirect('home')  # ← Savatga qo‘shgandan keyin home sahifaga qaytaradi
+    product = get_object_or_404(Product, id=product_id)
 
+    # Yoki mavjudini top, yoki yarat
+    order = Order.objects.filter(user=request.user, is_ordered=False).first()
+    if not order:
+        order = Order.objects.create(
+            user=request.user,
+            full_name="Temporary",
+            address="",
+            phone="",
+            total_price=0,
+            is_ordered=False
+        )
+
+    # Mahsulotni savatga qo‘shish
+    order_item, created = OrderItem.objects.get_or_create(
+        order=order,
+        product=product,
+        defaults={'quantity': 1, 'price': product.price}
+    )
+    if not created:
+        order_item.quantity += 1
+        order_item.save()
+
+    return redirect('home')
+
+@login_required
+def cart(request):
+    order = Order.objects.filter(user=request.user, is_ordered=False).first()
+    return render(request, 'market/cart.html', {'order': order})
 
 def view_cart(request):
     cart = request.session.get('cart', [])
@@ -49,23 +76,46 @@ def remove_from_cart(request, product_id):
         request.session['cart'] = cart
     return redirect('view_cart')
 
+@login_required
 def checkout(request):
-    cart = request.session.get('cart', [])
-    products = Product.objects.filter(id__in=cart)
+    # Savatni session orqali olamiz (masalan, savat dict holatida saqlanadi)
+    cart = request.session.get('cart', {})
+    products = Product.objects.filter(id__in=cart.keys())
+    total = sum(product.price * cart[str(product.id)] for product in products)
 
     if request.method == 'POST':
-        name = request.POST.get('name')
-        phone = request.POST.get('phone')
-        order = Order.objects.create(customer_name=name, phone=phone)
+        full_name = request.POST['full_name']
+        address = request.POST['address']
+        phone = request.POST['phone']
 
+        # Order yaratamiz
+        order = Order.objects.create(
+            user=request.user,
+            full_name=full_name,
+            address=address,
+            phone=phone,
+            total_price=total
+        )
+
+        # Har bir item uchun OrderItem
         for product in products:
-            OrderItem.objects.create(order=order, product=product)
+            quantity = cart[str(product.id)]
+            OrderItem.objects.create(
+                order=order,
+                product=product,
+                quantity=quantity,
+                price=product.price
+            )
 
-        request.session['cart'] = []  # savatni tozalaymiz
+        # Savatni tozalaymiz
+        request.session['cart'] = {}
+        messages.success(request, "Buyurtmangiz muvaffaqiyatli yakunlandi!")
         return redirect('home')
 
-    return render(request, 'market/checkout.html', {'products': products})
-
+    return render(request, 'market/checkout.html', {
+        'cart_items': [(product, cart[str(product.id)]) for product in products],
+        'total': total
+    })
 #Ro'yhattan o'tish
 def signup_view(request):
     if request.method == 'POST':
