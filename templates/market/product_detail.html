@@ -1,0 +1,24 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>{{ product.title }}</title>
+</head>
+<body style="font-family: sans-serif; background-color: #fefefe; padding: 20px;">
+  <h1>{{ product.title }}</h1>
+  <img src="{{ product.image_url }}" alt="{{ product.title }}" width="300">
+  <h3>Narxi: {{ product.price|floatformat:0 }} so'm</h3>
+  <p>Kategoriya: {{ product.category.name }}</p>
+
+  <form method="post" action="{% url 'add_to_cart' product.id %}">
+    {% csrf_token %}
+    <button type="submit">🛒 Savatga qo‘shish</button>
+  </form>
+
+  <br>
+  <a href="{% url 'home' %}">⬅️ Orqaga</a> |
+  <a href="{% url 'view_cart' %}">🛒 Savat</a>
+</body>
+</html>
+

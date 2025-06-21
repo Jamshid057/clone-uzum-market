@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Savat</title>
+</head>
+<body style="font-family: sans-serif; padding: 20px;">
+  <h1>🛒 Savatdagi mahsulotlar</h1>
+  {% if products %}
+    <ul>
+      {% for product in products %}
+        <li>
+          {{ product.title }} — {{ product.price|floatformat:0 }} so'm
+          <a href="{% url 'checkout' %}">📦 Buyurtma berish</a>
+        <a href="{% url 'remove_from_cart' product.id %}" style="color: red; margin-left: 10px;">❌ O‘chirish</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Savat bo‘sh.</p>
+  {% endif %}
+
+  <br>
+  <a href="{% url 'home' %}">⬅️ Bosh sahifa</a>
+</body>
+</html>
+

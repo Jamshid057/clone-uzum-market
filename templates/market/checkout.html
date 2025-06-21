@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Buyurtma berish</title>
+</head>
+<body style="font-family: sans-serif; padding: 20px;">
+  <h2>🧾 Buyurtma formasi</h2>
+
+  <form method="post">
+    {% csrf_token %}
+    <label>Ismingiz:</label><br>
+    <input type="text" name="name" required><br><br>
+
+    <label>Telefon raqamingiz:</label><br>
+    <input type="text" name="phone" required><br><br>
+
+    <h3>Buyurtma qilinadigan mahsulotlar:</h3>
+    <ul>
+      {% for product in products %}
+        <li>{{ product.title }} - {{ product.price }} so‘m</li>
+      {% endfor %}
+    </ul>
+
+    <br>
+    <button type="submit">📦 Buyurtma berish</button>
+  </form>
+
+  <br>
+  <a href="{% url 'view_cart' %}">⬅️ Savatga qaytish</a>
+</body>
+</html>
+

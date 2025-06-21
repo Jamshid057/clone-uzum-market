@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kirish</title>
+</head>
+<body style="padding: 20px;">
+  <h2>Tizimga kirish</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Kirish</button>
+  </form>
+  <a href="{% url 'signup' %}">Yangi foydalanuvchi? Ro‘yxatdan o‘tish</a>
+</body>
+</html>
+
